@@ -22,7 +22,7 @@
 # (To distribute this file outside of CMake, substitute the full
 #  License text for the above reference.)
 
-find_program(SPHINX_EXECUTABLE NAMES sphinx-build
+find_program(SPHINX_EXECUTABLE NAMES sphinx-build sphinx-1.0-build
   HINTS
   $ENV{SPHINX_DIR}
   PATH_SUFFIXES bin
