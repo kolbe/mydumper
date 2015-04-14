@@ -287,7 +287,7 @@ gboolean check_regex(char *database, char *table) {
 
 /* Write some stuff we know about snapshot, before it changes */
 void write_snapshot_info(MYSQL *conn, FILE *file) {
-	MYSQL_RES *master=NULL, *slave=NULL, *mdb=NULL;
+	MYSQL_RES *master=NULL, *slave=NULL;
 	MYSQL_FIELD *fields;
 	MYSQL_ROW row;
 
@@ -297,8 +297,6 @@ void write_snapshot_info(MYSQL *conn, FILE *file) {
 	char *slavehost=NULL;
 	char *slavelog=NULL;
 	char *slavepos=NULL;
-
-	char *gtidpos=NULL;
 
 	mysql_query(conn,"SHOW MASTER STATUS");
 	master=mysql_store_result(conn);
@@ -322,14 +320,6 @@ void write_snapshot_info(MYSQL *conn, FILE *file) {
 			}
 		}
 	}
-	g_message("MySQL server version : %lu", mysql_get_server_version(conn));
-	if (mysql_get_server_version(conn) > 100002) {
-		mysql_query(conn, "SELECT @@gtid_current_pos");
-		mdb=mysql_store_result(conn);
-		if (mdb && (row=mysql_fetch_row(mdb))) {
-			gtidpos=row[0];
-		}
-	}		
 
 	if (masterlog) {
 		fprintf(file, "SHOW MASTER STATUS:\n\tLog: %s\n\tPos: %s\n\n", masterlog, masterpos);
@@ -342,18 +332,11 @@ void write_snapshot_info(MYSQL *conn, FILE *file) {
 		g_message("Written slave status");
 	}
 
-	if (gtidpos) {
-		fprintf(file, "GTID_CURRENT_POS: %s\n\n", gtidpos);
-		g_message("Written current gtid pos");
-	}
-
 	fflush(file);
 	if (master)
 		mysql_free_result(master);
 	if (slave)
 		mysql_free_result(slave);
-	if (mdb)
-		mysql_free_result(mdb);
 }
 
 void *process_queue(struct thread_data *td) {
